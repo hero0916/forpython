@@ -117,11 +117,12 @@ DATABASES = {
 # EMAIL_HOST_PASSWORD: letmein1234 -> App Password in 2-step Authentication
 
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = "sandbox.smtp.mailtrap.io"
-EMAIL_PORT = 2525
-EMAIL_HOST_USER = '904cb205f6d1df'
-EMAIL_HOST_PASSWORD = '85f321aecc0902'
+EMAIL_HOST = "smtp-mail.outlook.com"
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'Fern08999@outlook.com'
+EMAIL_HOST_PASSWORD = 'Fer@12345678'
 EMAIL_USE_TLS = True
+DEFAULT_FROM_EMAIL = 'Fern08999@outlook.coxm'
 
 
 # Password validation
