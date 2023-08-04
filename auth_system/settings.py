@@ -122,7 +122,7 @@ EMAIL_PORT = 587
 EMAIL_HOST_USER = 'Fern08999@outlook.com'
 EMAIL_HOST_PASSWORD = 'Fer@12345678'
 EMAIL_USE_TLS = True
-DEFAULT_FROM_EMAIL = 'Fern08999@outlook.coxm'
+DEFAULT_FROM_EMAIL = 'Fern08999@outlook.com'
 
 
 # Password validation
