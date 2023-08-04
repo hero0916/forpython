@@ -90,15 +90,15 @@ WSGI_APPLICATION = "auth_system.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-# host = 'fern08999.mysql.pythonanywhere-services.com'
-# username = 'fern08999'
-# password = 'Fer@12345678'
-# database = 'fern08999$wdoinstitution'
+host = 'svenostermann.mysql.pythonanywhere-services.com'
+username = 'svenostermann'
+password = 'hero0916'
+database = 'svenostermann$wdoinstitution'
 
-host = 'localhost'
-username = 'root'
-password = ''
-database = 'wdoinstitution'
+# host = 'localhost'
+# username = 'root'
+# password = ''
+# database = 'wdoinstitution'
 
 DATABASES = {
     'default': {
