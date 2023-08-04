@@ -116,7 +116,6 @@ DATABASES = {
 # EMAIL_HOST_USER: johndoe@gmail.com
 # EMAIL_HOST_PASSWORD: letmein1234 -> App Password in 2-step Authentication
 
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp-mail.outlook.com"
 EMAIL_PORT = 587
 EMAIL_HOST_USER = 'Fern08999@outlook.com'
