@@ -118,10 +118,10 @@ DATABASES = {
 
 EMAIL_HOST = "smtp-mail.outlook.com"
 EMAIL_PORT = 587
-EMAIL_HOST_USER = 'Fern08999@outlook.com'
-EMAIL_HOST_PASSWORD = 'Fer@12345678'
+EMAIL_HOST_USER = 'svenostermann2023@outlook.com'
+EMAIL_HOST_PASSWORD = 'hero0916'
 EMAIL_USE_TLS = True
-DEFAULT_FROM_EMAIL = 'Fern08999@outlook.com'
+DEFAULT_FROM_EMAIL = 'svenostermann2023@outlook.com'
 
 
 # Password validation
