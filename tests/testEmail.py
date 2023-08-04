@@ -9,7 +9,7 @@ username = 'svenostermann2023@outlook.com'
 password = 'hero0916'
 
 # Create a secure connection to the server
-server = smtplib.SMTP(smtp_server, smtp_port)
+server = smtplib.SMTP(smtp_server, smtp_port, local_hostname='svenostermann.pythonanywhere')
 server.starttls()
 
 # Log in to your account
