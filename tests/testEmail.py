@@ -2,11 +2,12 @@ import smtplib
 from email.mime.text import MIMEText
 
 # Set up the connection to the SMTP server
-smtp_server = 'smtp-mail.outlook.com'
-smtp_port = 587
 
-username = 'svenostermann2023@outlook.com'
-password = 'hero0916'
+smtp_server = 'smtp.elasticemail.com'
+smtp_port = 2525
+
+username = 'Fern08999@outlook.com'
+password = 'EEF4DEEEA82B160ADDABC7F094A3B1CA3EBD'
 
 # Create a secure connection to the server
 server = smtplib.SMTP(smtp_server, smtp_port, local_hostname='svenostermann.pythonanywhere')
@@ -16,7 +17,7 @@ server.starttls()
 server.login(username, password)
 
 # Compose the email message
-sender = 'svenostermann2023@outlook.com'
+sender = 'kanedakenji646@gmail.com'
 recipient = 'svenostermann2023@outlook.com'
 subject = 'Test Email'
 message = 'This is a test email sent from Python.'
