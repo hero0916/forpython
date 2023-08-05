@@ -9,7 +9,6 @@ class UserAccountManager(BaseUserManager):
 
         email = self.normalize_email(email)
         user = self.model(email=email, **extra_fields)
-        user.is_active = 1
         user.set_password(password)
         user.save()
 
@@ -37,7 +36,7 @@ class UserPersonalDetails(models.Model):
             "name": self.name,
             "father_name": self.father_name,
             "mother_name": self.mother_name,
-            "email_address": self.email_address,
+            "email": self.email_address,
             "password": self.password,
             "birthday": self.birthday,
             "phonenumber": self.phonenumber,
@@ -159,18 +158,18 @@ class UserQualification(models.Model):
     @classmethod
     def from_dict(cls, user_qualification_dict):
         return cls(
-            tenth_qualification=Qualification.from_dict(user_qualification_dict.get('tenth_qualification')),
-            twelfth_qualification=Qualification.from_dict(user_qualification_dict.get('twelfth_qualification')),
-            university_qualification=Qualification.from_dict(user_qualification_dict.get('university_qualification')),
-            other_qualification=Qualification.from_dict(user_qualification_dict.get('other_qualification'))
+            tenth_qualification=Qualification.from_dict(user_qualification_dict.get('tenth')),
+            twelfth_qualification=Qualification.from_dict(user_qualification_dict.get('twelfth')),
+            university_qualification=Qualification.from_dict(user_qualification_dict.get('university')),
+            other_qualification=Qualification.from_dict(user_qualification_dict.get('other'))
         )
 
     def to_dict(self):
         return {
-            'tenth_qualification': self.tenth_qualification.to_dict(),
-            'twelfth_qualification': self.twelfth_qualification.to_dict(),
-            'university_qualification': self.university_qualification.to_dict(),
-            'other_qualification': self.other_qualification.to_dict()
+            'tenth': self.tenth_qualification.to_dict(),
+            'twelfth': self.twelfth_qualification.to_dict(),
+            'university': self.university_qualification.to_dict(),
+            'other': self.other_qualification.to_dict()
         }
         
     def save(self, *args, **kwargs):
@@ -300,7 +299,8 @@ class UserAccount(AbstractBaseUser, PermissionsMixin):
             self.address.save()
         if self.document_upload is not None:
             self.document_upload.save()
-        self.status = 'pending'
+        if self.status is None:
+            self.status = 'pending'
 
         # call the parent class's save method
         super().save(*args, **kwargs)
