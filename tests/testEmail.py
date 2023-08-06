@@ -37,7 +37,7 @@ import requests
 
 api_key = '2C9C8BBFD3DC6AA087A129246E8BA853347334734CB4A3485443B63FB9954A8F0AAE9511132E84239CDA40B05079D2AF'
 sender = 'kanedakenji646@gmail.com'
-recipient = 'svenostermann2023@outlook.com'
+recipient = 'kanedakenji646@gmail.com'
 subject = 'Hello from Elastic Email API'
 body = 'This is the email body.'
 

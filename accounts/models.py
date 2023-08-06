@@ -1,5 +1,51 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
+import base64
+from django.core.files.base import ContentFile
+from django.core.files.uploadedfile import InMemoryUploadedFile
+from django.conf import settings
+import random
+import string
+import time
+import os
+import logging
+
+logger = logging.getLogger('accounts')
+
+def generate_file_name():
+    random_string = ''.join(random.choices(string.ascii_letters + string.digits, k=6))
+    timestamp = str(int(time.time()))
+    file_name = random_string + '_' + timestamp
+    return file_name
+
+def save_upload_file(data):
+    if data is None:
+        return None
+
+    try:
+        splitData = data.split(';')
+
+        dataType = splitData[0]
+        splitDataType = dataType.split('/')
+        fileExtension = splitDataType[1]
+
+        file_name = generate_file_name() + '.' + fileExtension
+        image_data = base64.b64decode(data.split(',')[1])
+
+        upload_directory = getattr(settings, 'MEDIA_ROOT')
+
+        uploaded_path = os.path.join(upload_directory, file_name)
+
+        if not os.path.isdir(upload_directory):
+            os.makedirs(upload_directory)
+
+        with open(uploaded_path, 'wb') as f:
+            f.write( image_data )
+    except Exception as e:
+        logger.debug(e)
+        return None
+
+    return file_name
 
 class UserAccountManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
@@ -57,19 +103,23 @@ class UserPersonalDetails(models.Model):
             phonenumber=data.get("phonenumber"),
             alter_phone=data.get("alter_phone"),
             role=data.get("role"),
-            avatar=data.get("avatar")
+            avatar=save_upload_file(data.get("avatar"))
         )
 
 class Address(models.Model):
     street = models.CharField(max_length=255, null=True)
     city = models.CharField(max_length=255, null=True)
     state = models.CharField(max_length=255, null=True)
+    landmark = models.CharField(max_length=255, null=True)
+    zip_code = models.CharField(max_length=255, null=True)
 
     def to_dict(self):
         return {
             'street': self.street,
             'city': self.city,
             'state': self.state,
+            'landmark': self.landmark,
+            'zip_code': self.zip_code
         }
     
     @classmethod
@@ -78,6 +128,8 @@ class Address(models.Model):
             street=ad_dict['street'],
             city=ad_dict['city'],
             state=ad_dict['state'],
+            landmark=ad_dict['landmark'],
+            zip_code=ad_dict['zip_code'],
         )
 
 class UserAddress(models.Model):
@@ -190,15 +242,14 @@ class IndustryExperience(models.Model):
     designation = models.CharField(max_length=255, null=True)
     salary = models.CharField(max_length=255, null=True)
     total_year = models.CharField(max_length=255, null=True)
-    user_experiences = models.ForeignKey('UserAccount', on_delete=models.CASCADE, related_name='user_experiences')
+    user_account = models.ForeignKey('UserAccount', on_delete=models.CASCADE, related_name='user_experiences')
     
     def to_dict(self):
         return {
             'industry_name': self.industry_name,
             'designation': self.designation,
             'salary': self.salary,
-            'total_year': self.total_year,
-            'user_experiences': self.user_experiences.to_dict()  # Assuming UserAccount has a to_dict() method as well
+            'user_experiences': self.total_year,
         }
     
     @classmethod
@@ -206,16 +257,13 @@ class IndustryExperience(models.Model):
         industry_name = data.get('industry_name')
         designation = data.get('designation')
         salary = data.get('salary')
-        total_year = data.get('total_year')
-        user_experiences_data = data.get('user_experiences')
-        user_experiences = UserAccount.from_dict(user_experiences_data)  # Assuming UserAccount has a from_dict() method
+        total_year = data.get('user_experiences')
         
         return cls(
             industry_name=industry_name,
             designation=designation,
             salary=salary,
             total_year=total_year,
-            user_experiences=user_experiences
         )
 
 class UserDocuments(models.Model):
@@ -242,14 +290,14 @@ class UserDocuments(models.Model):
     @classmethod
     def from_dict(cls, data):
         return cls(
-            tenth_marksheet=data['tenth_marksheet'],
-            twelfth_marksheet=data['twelfth_marksheet'],
-            aadhar_card=data['aadhar_card'],
-            alternative_card=data['alternative_card'],
-            bank_passbook=data['bank_passbook'],
-            graduation=data['graduation'],
-            post_graduation=data['post_graduation'],
-            experience_certificate=data['experience_certificate']
+            tenth_marksheet         =save_upload_file(data.get('tenth_marksheet')),
+            twelfth_marksheet       =save_upload_file(data.get('twelfth_marksheet')),
+            aadhar_card             =save_upload_file(data.get('aadhar_card')),
+            alternative_card        =save_upload_file(data.get('alternative_card')),
+            bank_passbook           =save_upload_file(data.get('bank_passbook')),
+            graduation              =save_upload_file(data.get('graduation')),
+            post_graduation         =save_upload_file(data.get('post_graduation')),
+            experience_certificate  =save_upload_file(data.get('experience_certificate')),
         )
 
 class UserAccount(AbstractBaseUser, PermissionsMixin):
@@ -264,7 +312,6 @@ class UserAccount(AbstractBaseUser, PermissionsMixin):
     personal_details = models.OneToOneField(UserPersonalDetails, on_delete=models.CASCADE, null=True)
     qualification_details = models.OneToOneField(UserQualification, on_delete=models.CASCADE, null=True)
     address = models.OneToOneField(UserAddress, on_delete=models.CASCADE, null=True)
-    # Here is the user experience fields
     document_upload = models.OneToOneField(UserDocuments, on_delete=models.CASCADE, null=True)
 
     objects = UserAccountManager()
@@ -317,9 +364,19 @@ class UserAccount(AbstractBaseUser, PermissionsMixin):
             'personal_details': self.personal_details.to_dict() if self.personal_details else None,
             'qualification_details': self.qualification_details.to_dict() if self.qualification_details else None,
             'address': self.address.to_dict() if self.address else None,
-            'document_upload': self.document_upload.to_dict() if self.document_upload else None
+            'document_upload': self.document_upload.to_dict() if self.document_upload else None,
+            'industry_experiences': [experience.to_dict() for experience in self.user_experiences.all()],
         }
         return user_dict
+    
+    def delete(self, *args, **kwargs):
+        self.personal_details.delete()  # Delete associated UserPersonalDetails
+        self.qualification_details.delete()  # Delete associated UserQualification
+        self.address.delete()  # Delete associated UserAddress
+        self.document_upload.delete()  # Delete associated UserDocuments
+        self.user_experiences.all().delete()
+
+        return super().delete(*args, **kwargs)  # Call the default delete method
 
     def get_full_name(self):
         return self.first_name + self.last_name

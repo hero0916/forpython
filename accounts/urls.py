@@ -2,6 +2,8 @@ from django.urls import path, re_path
 from .views import (
     get_current_user,
     create_custom_user,
+    update_custom_user,
+    delete_custom_user,
     get_controllable_users,
     get_user_information,
     signin,
@@ -18,6 +20,8 @@ urlpatterns = [
     path('signup/', signup, name='signup'),  
     path('current_user/', get_current_user, name='current_user'),
     path('create_custom_user/', create_custom_user, name='create_custom_user'),
+    path('update_custom_user/', update_custom_user, name='update_custom_user'),
+    path('delete_custom_user/', delete_custom_user, name='delete_custom_user'),
     path('get_controllable_users/', get_controllable_users, name='get_controllable_users'),
     path('get_user_information/', get_user_information, name='get_user_information'),
     path('change_status/', change_status, name='change_status'),

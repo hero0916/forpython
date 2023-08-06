@@ -22,7 +22,7 @@ from .models import (
     UserAccount
 )
 
-roles = ['boss', 'ceo', 'superadmin', 'admin', 'manager', 'team_leader', 'employee', 'teacher', 'others']
+roles = ['boss', 'ceo', 'superadmin', 'admin', 'manager', 'teamleader', 'employee', 'teacher', 'others']
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -42,28 +42,41 @@ def get_current_user(request):
 def create_custom_user(request):
     data = request.data
     personal_details = data.get('personal_details')
-    qualification_details = data.get('qualification_details')
-    address = data.get('address')
-    industry_experience = data.get('industry_experience')
-    document_upload = data.get('document_upload')
-    print(document_upload)
+
+    if personal_details is None:
+        return Response( { 'msg': 'Please provide personal_details' }, status=500 )
+    
+    try:
+        email = personal_details.get('email_address')
+
+        if email is None:
+            return Response( {'msg': 'Please provide email address'}, status=500 )
+        user = UserAccount.objects.get(email=personal_details.get('email_address'))
+        if user is not None:
+            return Response( {'msg': 'Email address is already exists!'}, status=500 )        
+    except UserAccount.DoesNotExist:
+        flag = 1
 
     personal_details = UserPersonalDetails.from_dict(data['personal_details'])
     qualification_details = UserQualification.from_dict(data['qualification_details'])
     address = UserAddress.from_dict(data['address'])
     document_upload = UserDocuments.from_dict(data['document_upload'])
 
-    print(document_upload)
-
     user_account = UserAccount(
         personal_details=personal_details,
         qualification_details=qualification_details,
         address=address,
-        document_upload=document_upload)
-
+        document_upload=document_upload
+        )
     user_account.save()
 
-    return JsonResponse({"data": "Successfully extracted"})
+    industry_experiences = data.get('industry_experience')
+    for experience_data in industry_experiences:
+        industry_experience = IndustryExperience.from_dict(experience_data)
+        industry_experience.user_account = user_account
+        industry_experience.save()
+
+    return JsonResponse({"msg": "Successfully extracted"})
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -90,7 +103,6 @@ def get_controllable_users(request):
             "role": user.role, 
             "status": user.status
         }
-        print(json_data)
         user_persons.append(json_data)
 
     return JsonResponse({"users": user_persons}, status=200)
@@ -99,16 +111,15 @@ def get_controllable_users(request):
 @permission_classes([IsAuthenticated])
 def get_user_information(request):
     if request.data.get('id') is None:
-        return JsonResponse({'msg': 'Please provide id'})
+        return Response({'msg': 'Please provide id'}, status=500)
     
     try:
         user = UserAccount.objects.get(id=request.data.get('id'))
-        print(roles.index(request.user.role), roles.index(user.role))
         if roles.index(request.user.role) >= roles.index(user.role):
-            return JsonResponse({'msg': 'You are not allowed to read that user'})
+            return Response({'msg': 'You are not allowed to read that user'}, status=500)
 
     except UserAccount.DoesNotExist:
-        return JsonResponse({'msg': 'That user does not exist'})
+        return Response({'msg': 'That user does not exist'}, status=500)
 
     json_data = user.to_dict()
 
@@ -192,15 +203,15 @@ def signup(request):
 @permission_classes([IsAuthenticated])
 def change_status(request):
     if request.data.get('id') is None:
-        return JsonResponse({'msg': 'Please provide id'})
+        return Response({'msg': 'Please provide id'}, status=500)
     try:
         print(request.data.get('id'))
         user = UserAccount.objects.get(id=request.data.get('id'))
         if roles.index(request.user.role) >= roles.index(user.role):
-            return JsonResponse({'msg': 'You are not allowed to change user state'})
+            return Response({'msg': 'You are not allowed to change user state'}, status=500)
 
     except UserAccount.DoesNotExist:
-        return JsonResponse({'msg': 'That user does not exist'})
+        return Response({'msg': 'That user does not exist'}, status=500)
 
     user.status = request.data.get('status')
     user.save()
@@ -243,3 +254,56 @@ def change_pass(request):
     print(crypt)
     print(signer.unsign(crypt))
     return Response( { 'msg': 'success' }, status=200 )
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def update_custom_user(request):
+    if request.data.get('id') is None:
+        return Response({'msg': 'Please provide id'}, status=500)
+    try:
+        print(request.data.get('id'))
+        user_account = UserAccount.objects.get(id=request.data.get('id'),)
+        if roles.index(request.user.role) >= roles.index(user.role):
+            return Response({'msg': 'You are not allowed to change user state'}, status=500)
+
+    except UserAccount.DoesNotExist:
+        return Response({'msg': 'That user does not exist'}, status=500)
+
+    personal_details = UserPersonalDetails.from_dict(data['personal_details'])
+
+    qualification_details = UserQualification.from_dict(data['qualification_details'])
+    address = UserAddress.from_dict(data['address'])
+    document_upload = UserDocuments.from_dict(data['document_upload'])
+
+    user_account = UserAccount(
+        personal_details=personal_details,
+        qualification_details=qualification_details,
+        address=address,
+        document_upload=document_upload
+        )
+    user_account.save()
+
+    industry_experiences = data.get('industry_experience')
+    for experience_data in industry_experiences:
+        industry_experience = IndustryExperience.from_dict(experience_data)
+        industry_experience.user_account = user_account
+        industry_experience.save()
+
+    return Response( { 'msg': 'Successfully updated' }, status=200 )
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def delete_custom_user(request):
+    if request.data.get('id') is None:
+        return Response({'msg': 'Please provide id'}, status=500)
+    try:
+        user = UserAccount.objects.get(id=request.data.get('id'))
+        if roles.index(request.user.role) >= roles.index(user.role):
+            return Response({'msg': 'You are not allowed to change user state'}, status=500)
+
+    except UserAccount.DoesNotExist:
+        return Response({'msg': 'That user does not exist'}, status=500)
+
+    user.delete()
+
+    return Response( { 'msg': 'Successfully deleted!' }, status=200 )
