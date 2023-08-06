@@ -11,6 +11,5 @@ __pycache__/
 .vimrc
 .my.cnf
 README.txt
-/build
 /upload
 
